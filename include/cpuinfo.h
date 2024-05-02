@@ -14,7 +14,7 @@
 
 /* Identify architecture and define corresponding macro */
 
-#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86)
+#if defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || defined(_M_IX86) || defined(__X86__)
 #define CPUINFO_ARCH_X86 1
 #endif
 
@@ -22,7 +22,7 @@
 #define CPUINFO_ARCH_X86_64 1
 #endif
 
-#if defined(__arm__) || defined(_M_ARM)
+#if defined(__arm__) || defined(_M_ARM) || defined(__ARM__)
 #define CPUINFO_ARCH_ARM 1
 #endif
 
@@ -859,6 +859,14 @@ struct cpuinfo_x86_isa {
 extern struct cpuinfo_x86_isa cpuinfo_isa;
 #endif
 
+#ifdef __QNXNTO__
+	#include <sys/neutrino.h>
+	#include <inttypes.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <sys/syspage.h>
+#endif
+
 static inline bool cpuinfo_has_x86_rdtsc(void) {
 #if CPUINFO_ARCH_X86_64
 	return true;
@@ -875,14 +883,18 @@ static inline bool cpuinfo_has_x86_rdtsc(void) {
 
 static inline bool cpuinfo_has_x86_rdtscp(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & X86_64_CPU_RDTSC) != 0);
+#else
 	return cpuinfo_isa.rdtscp;
+#endif
 #else
 	return false;
 #endif
 }
 
 static inline bool cpuinfo_has_x86_rdpid(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.rdpid;
 #else
 	return false;
@@ -890,7 +902,7 @@ static inline bool cpuinfo_has_x86_rdpid(void) {
 }
 
 static inline bool cpuinfo_has_x86_clzero(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.clzero;
 #else
 	return false;
@@ -898,7 +910,7 @@ static inline bool cpuinfo_has_x86_clzero(void) {
 }
 
 static inline bool cpuinfo_has_x86_mwait(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.mwait;
 #else
 	return false;
@@ -906,7 +918,7 @@ static inline bool cpuinfo_has_x86_mwait(void) {
 }
 
 static inline bool cpuinfo_has_x86_mwaitx(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.mwaitx;
 #else
 	return false;
@@ -915,7 +927,11 @@ static inline bool cpuinfo_has_x86_mwaitx(void) {
 
 static inline bool cpuinfo_has_x86_fxsave(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & X86_64_CPU_FXSR) != 0);
+#else
 	return cpuinfo_isa.fxsave;
+#endif
 #else
 	return false;
 #endif
@@ -923,7 +939,11 @@ static inline bool cpuinfo_has_x86_fxsave(void) {
 
 static inline bool cpuinfo_has_x86_xsave(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & X86_64_CPU_XSAVE) != 0);
+#else
 	return cpuinfo_isa.xsave;
+#endif
 #else
 	return false;
 #endif
@@ -972,7 +992,7 @@ static inline bool cpuinfo_has_x86_mmx_plus(void) {
 }
 
 static inline bool cpuinfo_has_x86_3dnow(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.three_d_now;
 #else
 	return false;
@@ -980,7 +1000,7 @@ static inline bool cpuinfo_has_x86_3dnow(void) {
 }
 
 static inline bool cpuinfo_has_x86_3dnow_plus(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.three_d_now_plus;
 #else
 	return false;
@@ -1002,7 +1022,7 @@ static inline bool cpuinfo_has_x86_3dnow_geode(void) {
 }
 
 static inline bool cpuinfo_has_x86_prefetch(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.prefetch;
 #else
 	return false;
@@ -1010,7 +1030,7 @@ static inline bool cpuinfo_has_x86_prefetch(void) {
 }
 
 static inline bool cpuinfo_has_x86_prefetchw(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.prefetchw;
 #else
 	return false;
@@ -1018,7 +1038,7 @@ static inline bool cpuinfo_has_x86_prefetchw(void) {
 }
 
 static inline bool cpuinfo_has_x86_prefetchwt1(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.prefetchwt1;
 #else
 	return false;
@@ -1068,7 +1088,7 @@ static inline bool cpuinfo_has_x86_sse2(void) {
 }
 
 static inline bool cpuinfo_has_x86_sse3(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 #if defined(__ANDROID__)
 	return true;
 #else
@@ -1080,7 +1100,7 @@ static inline bool cpuinfo_has_x86_sse3(void) {
 }
 
 static inline bool cpuinfo_has_x86_ssse3(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 #if defined(__ANDROID__)
 	return true;
 #else
@@ -1092,7 +1112,7 @@ static inline bool cpuinfo_has_x86_ssse3(void) {
 }
 
 static inline bool cpuinfo_has_x86_sse4_1(void) {
-#if CPUINFO_ARCH_X86_64
+#if CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 #if defined(__ANDROID__)
 	return true;
 #else
@@ -1106,7 +1126,7 @@ static inline bool cpuinfo_has_x86_sse4_1(void) {
 }
 
 static inline bool cpuinfo_has_x86_sse4_2(void) {
-#if CPUINFO_ARCH_X86_64
+#if CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 #if defined(__ANDROID__)
 	return true;
 #else
@@ -1120,7 +1140,7 @@ static inline bool cpuinfo_has_x86_sse4_2(void) {
 }
 
 static inline bool cpuinfo_has_x86_sse4a(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.sse4a;
 #else
 	return false;
@@ -1128,7 +1148,7 @@ static inline bool cpuinfo_has_x86_sse4a(void) {
 }
 
 static inline bool cpuinfo_has_x86_misaligned_sse(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.misaligned_sse;
 #else
 	return false;
@@ -1137,14 +1157,18 @@ static inline bool cpuinfo_has_x86_misaligned_sse(void) {
 
 static inline bool cpuinfo_has_x86_avx(void) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & X86_64_CPU_AVX) != 0);
+#else
 	return cpuinfo_isa.avx;
+#endif
 #else
 	return false;
 #endif
 }
 
 static inline bool cpuinfo_has_x86_avxvnni(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avxvnni;
 #else
 	return false;
@@ -1152,15 +1176,17 @@ static inline bool cpuinfo_has_x86_avxvnni(void) {
 }
 
 static inline bool cpuinfo_has_x86_fma3(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.fma3;
+#elif defined(__QNXNTO__) && CPUINFO_ARCH_X86_64
+	return true;
 #else
 	return false;
 #endif
 }
 
 static inline bool cpuinfo_has_x86_fma4(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.fma4;
 #else
 	return false;
@@ -1168,7 +1194,7 @@ static inline bool cpuinfo_has_x86_fma4(void) {
 }
 
 static inline bool cpuinfo_has_x86_xop(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.xop;
 #else
 	return false;
@@ -1176,7 +1202,7 @@ static inline bool cpuinfo_has_x86_xop(void) {
 }
 
 static inline bool cpuinfo_has_x86_f16c(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.f16c;
 #else
 	return false;
@@ -1184,15 +1210,17 @@ static inline bool cpuinfo_has_x86_f16c(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx2(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx2;
+#elif defined(__QNXNTO__) && CPUINFO_ARCH_X86_64
+	return true;
 #else
 	return false;
 #endif
 }
 
 static inline bool cpuinfo_has_x86_avx512f(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512f;
 #else
 	return false;
@@ -1200,7 +1228,7 @@ static inline bool cpuinfo_has_x86_avx512f(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512pf(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512pf;
 #else
 	return false;
@@ -1208,7 +1236,7 @@ static inline bool cpuinfo_has_x86_avx512pf(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512er(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512er;
 #else
 	return false;
@@ -1216,7 +1244,7 @@ static inline bool cpuinfo_has_x86_avx512er(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512cd(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512cd;
 #else
 	return false;
@@ -1224,7 +1252,7 @@ static inline bool cpuinfo_has_x86_avx512cd(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512dq(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512dq;
 #else
 	return false;
@@ -1232,7 +1260,7 @@ static inline bool cpuinfo_has_x86_avx512dq(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512bw(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512bw;
 #else
 	return false;
@@ -1240,7 +1268,7 @@ static inline bool cpuinfo_has_x86_avx512bw(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vl(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vl;
 #else
 	return false;
@@ -1248,7 +1276,7 @@ static inline bool cpuinfo_has_x86_avx512vl(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512ifma(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512ifma;
 #else
 	return false;
@@ -1256,7 +1284,7 @@ static inline bool cpuinfo_has_x86_avx512ifma(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vbmi(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vbmi;
 #else
 	return false;
@@ -1264,7 +1292,7 @@ static inline bool cpuinfo_has_x86_avx512vbmi(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vbmi2(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vbmi2;
 #else
 	return false;
@@ -1272,7 +1300,7 @@ static inline bool cpuinfo_has_x86_avx512vbmi2(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512bitalg(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512bitalg;
 #else
 	return false;
@@ -1280,7 +1308,7 @@ static inline bool cpuinfo_has_x86_avx512bitalg(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vpopcntdq(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vpopcntdq;
 #else
 	return false;
@@ -1288,7 +1316,7 @@ static inline bool cpuinfo_has_x86_avx512vpopcntdq(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vnni(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vnni;
 #else
 	return false;
@@ -1296,7 +1324,7 @@ static inline bool cpuinfo_has_x86_avx512vnni(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512bf16(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512bf16;
 #else
 	return false;
@@ -1304,7 +1332,7 @@ static inline bool cpuinfo_has_x86_avx512bf16(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512fp16(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512fp16;
 #else
 	return false;
@@ -1312,7 +1340,7 @@ static inline bool cpuinfo_has_x86_avx512fp16(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512vp2intersect(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512vp2intersect;
 #else
 	return false;
@@ -1320,7 +1348,7 @@ static inline bool cpuinfo_has_x86_avx512vp2intersect(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512_4vnniw(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512_4vnniw;
 #else
 	return false;
@@ -1328,7 +1356,7 @@ static inline bool cpuinfo_has_x86_avx512_4vnniw(void) {
 }
 
 static inline bool cpuinfo_has_x86_avx512_4fmaps(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx512_4fmaps;
 #else
 	return false;
@@ -1356,7 +1384,7 @@ static inline bool cpuinfo_has_x86_avx512_4fmaps(void) {
  *    /accelerator-engines/advanced-matrix-extensions/overview.html
  */
 static inline bool cpuinfo_has_x86_amx_bf16(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.amx_bf16;
 #else
 	return false;
@@ -1364,7 +1392,7 @@ static inline bool cpuinfo_has_x86_amx_bf16(void) {
 }
 
 static inline bool cpuinfo_has_x86_amx_tile(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.amx_tile;
 #else
 	return false;
@@ -1372,7 +1400,7 @@ static inline bool cpuinfo_has_x86_amx_tile(void) {
 }
 
 static inline bool cpuinfo_has_x86_amx_int8(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.amx_int8;
 #else
 	return false;
@@ -1380,7 +1408,7 @@ static inline bool cpuinfo_has_x86_amx_int8(void) {
 }
 
 static inline bool cpuinfo_has_x86_amx_fp16(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.amx_fp16;
 #else
 	return false;
@@ -1392,7 +1420,7 @@ static inline bool cpuinfo_has_x86_amx_fp16(void) {
  * Supported Platfroms: Sierra Forest, Arrow Lake, Lunar Lake
  */
 static inline bool cpuinfo_has_x86_avx_vnni_int8(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx_vnni_int8;
 #else
 	return false;
@@ -1404,7 +1432,7 @@ static inline bool cpuinfo_has_x86_avx_vnni_int8(void) {
  * Supported Platfroms: Arrow Lake, Lunar Lake
  */
 static inline bool cpuinfo_has_x86_avx_vnni_int16(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx_vnni_int16;
 #else
 	return false;
@@ -1420,7 +1448,7 @@ static inline bool cpuinfo_has_x86_avx_vnni_int16(void) {
  * Supported Platforms: Sierra Forest, Arrow Lake, Lunar Lake
  */
 static inline bool cpuinfo_has_x86_avx_ne_convert(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.avx_ne_convert;
 #else
 	return false;
@@ -1428,7 +1456,7 @@ static inline bool cpuinfo_has_x86_avx_ne_convert(void) {
 }
 
 static inline bool cpuinfo_has_x86_hle(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.hle;
 #else
 	return false;
@@ -1436,7 +1464,7 @@ static inline bool cpuinfo_has_x86_hle(void) {
 }
 
 static inline bool cpuinfo_has_x86_rtm(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.rtm;
 #else
 	return false;
@@ -1444,7 +1472,7 @@ static inline bool cpuinfo_has_x86_rtm(void) {
 }
 
 static inline bool cpuinfo_has_x86_xtest(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.xtest;
 #else
 	return false;
@@ -1452,7 +1480,7 @@ static inline bool cpuinfo_has_x86_xtest(void) {
 }
 
 static inline bool cpuinfo_has_x86_mpx(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.mpx;
 #else
 	return false;
@@ -1480,7 +1508,7 @@ static inline bool cpuinfo_has_x86_cmpxchg8b(void) {
 }
 
 static inline bool cpuinfo_has_x86_cmpxchg16b(void) {
-#if CPUINFO_ARCH_X86_64
+#if CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.cmpxchg16b;
 #else
 	return false;
@@ -1488,7 +1516,7 @@ static inline bool cpuinfo_has_x86_cmpxchg16b(void) {
 }
 
 static inline bool cpuinfo_has_x86_clwb(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.clwb;
 #else
 	return false;
@@ -1496,7 +1524,7 @@ static inline bool cpuinfo_has_x86_clwb(void) {
 }
 
 static inline bool cpuinfo_has_x86_movbe(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.movbe;
 #else
 	return false;
@@ -1506,7 +1534,7 @@ static inline bool cpuinfo_has_x86_movbe(void) {
 static inline bool cpuinfo_has_x86_lahf_sahf(void) {
 #if CPUINFO_ARCH_X86
 	return true;
-#elif CPUINFO_ARCH_X86_64
+#elif CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.lahf_sahf;
 #else
 	return false;
@@ -1514,7 +1542,7 @@ static inline bool cpuinfo_has_x86_lahf_sahf(void) {
 }
 
 static inline bool cpuinfo_has_x86_lzcnt(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.lzcnt;
 #else
 	return false;
@@ -1522,7 +1550,7 @@ static inline bool cpuinfo_has_x86_lzcnt(void) {
 }
 
 static inline bool cpuinfo_has_x86_popcnt(void) {
-#if CPUINFO_ARCH_X86_64
+#if CPUINFO_ARCH_X86_64 && !defined(__QNXNTO__)
 #if defined(__ANDROID__)
 	return true;
 #else
@@ -1536,7 +1564,7 @@ static inline bool cpuinfo_has_x86_popcnt(void) {
 }
 
 static inline bool cpuinfo_has_x86_tbm(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.tbm;
 #else
 	return false;
@@ -1544,7 +1572,7 @@ static inline bool cpuinfo_has_x86_tbm(void) {
 }
 
 static inline bool cpuinfo_has_x86_bmi(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.bmi;
 #else
 	return false;
@@ -1552,7 +1580,7 @@ static inline bool cpuinfo_has_x86_bmi(void) {
 }
 
 static inline bool cpuinfo_has_x86_bmi2(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.bmi2;
 #else
 	return false;
@@ -1560,7 +1588,7 @@ static inline bool cpuinfo_has_x86_bmi2(void) {
 }
 
 static inline bool cpuinfo_has_x86_adx(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.adx;
 #else
 	return false;
@@ -1568,7 +1596,7 @@ static inline bool cpuinfo_has_x86_adx(void) {
 }
 
 static inline bool cpuinfo_has_x86_aes(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.aes;
 #else
 	return false;
@@ -1576,7 +1604,7 @@ static inline bool cpuinfo_has_x86_aes(void) {
 }
 
 static inline bool cpuinfo_has_x86_vaes(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.vaes;
 #else
 	return false;
@@ -1584,7 +1612,7 @@ static inline bool cpuinfo_has_x86_vaes(void) {
 }
 
 static inline bool cpuinfo_has_x86_pclmulqdq(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.pclmulqdq;
 #else
 	return false;
@@ -1592,7 +1620,7 @@ static inline bool cpuinfo_has_x86_pclmulqdq(void) {
 }
 
 static inline bool cpuinfo_has_x86_vpclmulqdq(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.vpclmulqdq;
 #else
 	return false;
@@ -1600,7 +1628,7 @@ static inline bool cpuinfo_has_x86_vpclmulqdq(void) {
 }
 
 static inline bool cpuinfo_has_x86_gfni(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.gfni;
 #else
 	return false;
@@ -1608,7 +1636,7 @@ static inline bool cpuinfo_has_x86_gfni(void) {
 }
 
 static inline bool cpuinfo_has_x86_rdrand(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.rdrand;
 #else
 	return false;
@@ -1616,7 +1644,7 @@ static inline bool cpuinfo_has_x86_rdrand(void) {
 }
 
 static inline bool cpuinfo_has_x86_rdseed(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.rdseed;
 #else
 	return false;
@@ -1624,7 +1652,7 @@ static inline bool cpuinfo_has_x86_rdseed(void) {
 }
 
 static inline bool cpuinfo_has_x86_sha(void) {
-#if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
+#if (CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.sha;
 #else
 	return false;
@@ -1683,16 +1711,20 @@ extern struct cpuinfo_arm_isa cpuinfo_isa;
 #endif
 
 static inline bool cpuinfo_has_arm_thumb(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.thumb;
+#elif defined(__QNXNTO__) && CPUINFO_ARCH_ARM
+	return true;
 #else
 	return false;
 #endif
 }
 
 static inline bool cpuinfo_has_arm_thumb2(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.thumb2;
+#elif defined(__QNXNTO__) && CPUINFO_ARCH_ARM
+	return true;
 #else
 	return false;
 #endif
@@ -1707,7 +1739,7 @@ static inline bool cpuinfo_has_arm_v5e(void) {
 }
 
 static inline bool cpuinfo_has_arm_v6(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.armv6;
 #else
 	return false;
@@ -1715,7 +1747,7 @@ static inline bool cpuinfo_has_arm_v6(void) {
 }
 
 static inline bool cpuinfo_has_arm_v6k(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.armv6k;
 #else
 	return false;
@@ -1724,7 +1756,11 @@ static inline bool cpuinfo_has_arm_v6k(void) {
 
 static inline bool cpuinfo_has_arm_v7(void) {
 #if CPUINFO_ARCH_ARM
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & ARM_CPU_FLAG_V7) != 0);
+#else
 	return cpuinfo_isa.armv7;
+#endif
 #else
 	return false;
 #endif
@@ -1732,7 +1768,11 @@ static inline bool cpuinfo_has_arm_v7(void) {
 
 static inline bool cpuinfo_has_arm_v7mp(void) {
 #if CPUINFO_ARCH_ARM
+#if defined(__QNXNTO__)
+	return ((SYSPAGE_ARRAY_IDX(cpuinfo,0)->flags & ARM_CPU_FLAG_V7_MP) != 0);
+#else
 	return cpuinfo_isa.armv7mp;
+#endif
 #else
 	return false;
 #endif
@@ -1741,7 +1781,7 @@ static inline bool cpuinfo_has_arm_v7mp(void) {
 static inline bool cpuinfo_has_arm_v8(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.armv8;
 #else
 	return false;
@@ -1751,7 +1791,7 @@ static inline bool cpuinfo_has_arm_v8(void) {
 static inline bool cpuinfo_has_arm_idiv(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.idiv;
 #else
 	return false;
@@ -1759,7 +1799,7 @@ static inline bool cpuinfo_has_arm_idiv(void) {
 }
 
 static inline bool cpuinfo_has_arm_vfpv2(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv2;
 #else
 	return false;
@@ -1769,7 +1809,7 @@ static inline bool cpuinfo_has_arm_vfpv2(void) {
 static inline bool cpuinfo_has_arm_vfpv3(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3;
 #else
 	return false;
@@ -1779,7 +1819,7 @@ static inline bool cpuinfo_has_arm_vfpv3(void) {
 static inline bool cpuinfo_has_arm_vfpv3_d32(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3 && cpuinfo_isa.d32;
 #else
 	return false;
@@ -1789,7 +1829,7 @@ static inline bool cpuinfo_has_arm_vfpv3_d32(void) {
 static inline bool cpuinfo_has_arm_vfpv3_fp16(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3 && cpuinfo_isa.fp16;
 #else
 	return false;
@@ -1799,7 +1839,7 @@ static inline bool cpuinfo_has_arm_vfpv3_fp16(void) {
 static inline bool cpuinfo_has_arm_vfpv3_fp16_d32(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3 && cpuinfo_isa.fp16 && cpuinfo_isa.d32;
 #else
 	return false;
@@ -1809,7 +1849,7 @@ static inline bool cpuinfo_has_arm_vfpv3_fp16_d32(void) {
 static inline bool cpuinfo_has_arm_vfpv4(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3 && cpuinfo_isa.fma;
 #else
 	return false;
@@ -1819,7 +1859,7 @@ static inline bool cpuinfo_has_arm_vfpv4(void) {
 static inline bool cpuinfo_has_arm_vfpv4_d32(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.vfpv3 && cpuinfo_isa.fma && cpuinfo_isa.d32;
 #else
 	return false;
@@ -1827,7 +1867,7 @@ static inline bool cpuinfo_has_arm_vfpv4_d32(void) {
 }
 
 static inline bool cpuinfo_has_arm_fp16_arith(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.fp16arith;
 #else
 	return false;
@@ -1835,7 +1875,7 @@ static inline bool cpuinfo_has_arm_fp16_arith(void) {
 }
 
 static inline bool cpuinfo_has_arm_bf16(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.bf16;
 #else
 	return false;
@@ -1843,7 +1883,7 @@ static inline bool cpuinfo_has_arm_bf16(void) {
 }
 
 static inline bool cpuinfo_has_arm_wmmx(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.wmmx;
 #else
 	return false;
@@ -1861,7 +1901,7 @@ static inline bool cpuinfo_has_arm_wmmx2(void) {
 static inline bool cpuinfo_has_arm_neon(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.neon;
 #else
 	return false;
@@ -1871,7 +1911,7 @@ static inline bool cpuinfo_has_arm_neon(void) {
 static inline bool cpuinfo_has_arm_neon_fp16(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.neon && cpuinfo_isa.fp16;
 #else
 	return false;
@@ -1881,7 +1921,7 @@ static inline bool cpuinfo_has_arm_neon_fp16(void) {
 static inline bool cpuinfo_has_arm_neon_fma(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.neon && cpuinfo_isa.fma;
 #else
 	return false;
@@ -1891,7 +1931,7 @@ static inline bool cpuinfo_has_arm_neon_fma(void) {
 static inline bool cpuinfo_has_arm_neon_v8(void) {
 #if CPUINFO_ARCH_ARM64
 	return true;
-#elif CPUINFO_ARCH_ARM
+#elif CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.neon && cpuinfo_isa.armv8;
 #else
 	return false;
@@ -1907,7 +1947,7 @@ static inline bool cpuinfo_has_arm_atomics(void) {
 }
 
 static inline bool cpuinfo_has_arm_neon_rdm(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.rdm;
 #else
 	return false;
@@ -1915,9 +1955,9 @@ static inline bool cpuinfo_has_arm_neon_rdm(void) {
 }
 
 static inline bool cpuinfo_has_arm_neon_fp16_arith(void) {
-#if CPUINFO_ARCH_ARM
+#if CPUINFO_ARCH_ARM && !defined(__QNXNTO__)
 	return cpuinfo_isa.neon && cpuinfo_isa.fp16arith;
-#elif CPUINFO_ARCH_ARM64
+#elif CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.fp16arith;
 #else
 	return false;
@@ -1925,7 +1965,7 @@ static inline bool cpuinfo_has_arm_neon_fp16_arith(void) {
 }
 
 static inline bool cpuinfo_has_arm_fhm(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.fhm;
 #else
 	return false;
@@ -1933,7 +1973,7 @@ static inline bool cpuinfo_has_arm_fhm(void) {
 }
 
 static inline bool cpuinfo_has_arm_neon_dot(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.dot;
 #else
 	return false;
@@ -1941,7 +1981,7 @@ static inline bool cpuinfo_has_arm_neon_dot(void) {
 }
 
 static inline bool cpuinfo_has_arm_neon_bf16(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.bf16;
 #else
 	return false;
@@ -1949,7 +1989,7 @@ static inline bool cpuinfo_has_arm_neon_bf16(void) {
 }
 
 static inline bool cpuinfo_has_arm_jscvt(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.jscvt;
 #else
 	return false;
@@ -1957,7 +1997,7 @@ static inline bool cpuinfo_has_arm_jscvt(void) {
 }
 
 static inline bool cpuinfo_has_arm_fcma(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.fcma;
 #else
 	return false;
@@ -1965,7 +2005,7 @@ static inline bool cpuinfo_has_arm_fcma(void) {
 }
 
 static inline bool cpuinfo_has_arm_i8mm(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.i8mm;
 #else
 	return false;
@@ -1973,7 +2013,7 @@ static inline bool cpuinfo_has_arm_i8mm(void) {
 }
 
 static inline bool cpuinfo_has_arm_aes(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.aes;
 #else
 	return false;
@@ -1981,7 +2021,7 @@ static inline bool cpuinfo_has_arm_aes(void) {
 }
 
 static inline bool cpuinfo_has_arm_sha1(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.sha1;
 #else
 	return false;
@@ -1989,7 +2029,7 @@ static inline bool cpuinfo_has_arm_sha1(void) {
 }
 
 static inline bool cpuinfo_has_arm_sha2(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.sha2;
 #else
 	return false;
@@ -2005,7 +2045,7 @@ static inline bool cpuinfo_has_arm_pmull(void) {
 }
 
 static inline bool cpuinfo_has_arm_crc32(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.crc32;
 #else
 	return false;
@@ -2013,7 +2053,7 @@ static inline bool cpuinfo_has_arm_crc32(void) {
 }
 
 static inline bool cpuinfo_has_arm_sve(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.sve;
 #else
 	return false;
@@ -2021,7 +2061,7 @@ static inline bool cpuinfo_has_arm_sve(void) {
 }
 
 static inline bool cpuinfo_has_arm_sve_bf16(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.sve && cpuinfo_isa.bf16;
 #else
 	return false;
@@ -2029,7 +2069,7 @@ static inline bool cpuinfo_has_arm_sve_bf16(void) {
 }
 
 static inline bool cpuinfo_has_arm_sve2(void) {
-#if CPUINFO_ARCH_ARM64
+#if CPUINFO_ARCH_ARM64 && !defined(__QNXNTO__)
 	return cpuinfo_isa.sve2;
 #else
 	return false;
