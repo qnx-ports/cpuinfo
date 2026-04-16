@@ -141,6 +141,27 @@ EMSCRIPTEN_SRCS = [
     "src/emscripten/init.c",
 ]
 
+QNX_SRCS = [
+    "src/qnx/api.c",
+]
+
+QNX_X64_SRCS = [
+    "src/x86/init.c",
+    "src/x86/info.c",
+    "src/x86/vendor.c",
+    "src/x86/uarch.c",
+    "src/x86/name.c",
+    "src/x86/topology.c",
+    "src/x86/isa.c",
+    "src/x86/cache/init.c",
+    "src/x86/cache/descriptor.c",
+    "src/x86/cache/deterministic.c",
+]
+
+QNX_ARM64_SRCS = [
+    "src/arm/uarch.c",
+]
+
 cc_library(
     name = "cpuinfo_impl",
     srcs = select({
@@ -178,6 +199,8 @@ cc_library(
         ":tvos_x86_64": COMMON_SRCS + X86_SRCS + MACH_SRCS + MACH_X86_SRCS,
         ":tvos_arm64": COMMON_SRCS + MACH_SRCS + MACH_ARM_SRCS,
         ":emscripten_wasm": COMMON_SRCS + EMSCRIPTEN_SRCS,
+        ":qnx_x86_64": COMMON_SRCS + QNX_SRCS + QNX_X64_SRCS,
+        ":qnx_aarch64": COMMON_SRCS + QNX_SRCS + QNX_ARM64_SRCS,
     }),
     copts = select({
         ":windows_x86_64": [],
@@ -526,4 +549,18 @@ config_setting(
         "@platforms//cpu:x86_64",
         "@platforms//os:freebsd",
     ],
+)
+
+config_setting(
+    name = "qnx_x86_64",
+    values = {
+        "cpu": "qnx_x64",
+    },
+)
+
+config_setting(
+    name = "qnx_aarch64",
+    values = {
+        "cpu": "qnx_arm64",
+    },
 )
