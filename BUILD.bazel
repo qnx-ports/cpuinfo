@@ -210,6 +210,7 @@ cc_library(
         "src/freebsd/api.h",
         "src/linux/api.h",
         "src/mach/api.h",
+        "src/qnx/api.h",
         "src/cpuinfo/common.h",
         "src/cpuinfo/internal-api.h",
         "src/cpuinfo/log.h",
