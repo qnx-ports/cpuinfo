@@ -2100,7 +2100,7 @@ static inline bool cpuinfo_has_arm_sha2(void) {
 }
 
 static inline bool cpuinfo_has_arm_pmull(void) {
-#if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
+#if (CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64) && !defined(__QNXNTO__)
 	return cpuinfo_isa.pmull;
 #else
 	return false;
