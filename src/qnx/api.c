@@ -15,6 +15,10 @@
 #if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
     #include <arm/midr.h>
     #include <arm/api.h>
+
+    // We don't use this struct at the moment, and there is no generic file defining
+    // it.
+    struct cpuinfo_arm_isa cpuinfo_isa = {0};
 #endif
 
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
