@@ -11,7 +11,7 @@ extern struct cpuinfo_cluster * qnx_cluster;
 extern struct cpuinfo_package * qnx_package;
 
 void cpuinfo_qnx_init();
-int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list);
+int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list, const bool have_io_priv);
 const struct cpuinfo_processor * cpuinfo_qnx_get_processor(uint32_t index);
 const struct cpuinfo_core* cpuinfo_qnx_get_core(void);
 const struct cpuinfo_cluster* cpuinfo_qnx_get_cluster(void);
