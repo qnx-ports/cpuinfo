@@ -129,7 +129,7 @@ enum cpuinfo_uarch cpuinfo_qnx_get_uarch(){
         return cpuinfo_uarch_unknown;
 }
 
-int cpuinfo_qnx_fill_core_info(struct cpuinfo_core * core){
+int cpuinfo_qnx_fill_core_info(struct cpuinfo_core * core, const bool have_io_priv){
     core->processor_start = 0;
     core->processor_count = _syspage_ptr->num_cpu;
     cpuinfo_cores_count = 1;
@@ -142,22 +142,24 @@ int cpuinfo_qnx_fill_core_info(struct cpuinfo_core * core){
     core->package = qnx_package;
     core->vendor = cpuinfo_qnx_get_vendor();
     core->uarch = cpuinfo_qnx_get_uarch();
+    if (have_io_priv) {
 #if CPUINFO_ARCH_X86 || CPUINFO_ARCH_X86_64
-	/** Value of CPUID leaf 1 EAX register for this core */
-    uint32_t EAX=0;
-    uint32_t EBX=0;
-    uint32_t ECX=0;
-    uint32_t EDX=0;
-    uint32_t leaf = 1;
-    x86_cpuid1(leaf, &EAX, &EBX, &ECX, &EDX );
-    core->cpuid = EAX;
+        /** Value of CPUID leaf 1 EAX register for this core */
+        uint32_t EAX=0;
+        uint32_t EBX=0;
+        uint32_t ECX=0;
+        uint32_t EDX=0;
+        uint32_t leaf = 1;
+        x86_cpuid1(leaf, &EAX, &EBX, &ECX, &EDX );
+        core->cpuid = EAX;
 #elif CPUINFO_ARCH_ARM64
-	/** Value of Main ID Register (MIDR) for this core */
-    __asm__("mrs %0, MIDR_EL1" : "=r"(core->midr));
+        /** Value of Main ID Register (MIDR) for this core */
+        __asm__("mrs %0, MIDR_EL1" : "=r"(core->midr));
 #elif CPUINFO_ARCH_ARM
-    /** Value of Main ID Register (MIDR) for this core */
-    __asm__("mrc p15,0,%0,c0,c0,0":"=r"(core->midr));
+        /** Value of Main ID Register (MIDR) for this core */
+        __asm__("mrc p15,0,%0,c0,c0,0":"=r"(core->midr));
 #endif
+    }
     core->frequency = SYSPAGE_ENTRY(qtime)->cycles_per_sec;
     return 0;
 }
@@ -170,11 +172,11 @@ void cpuinfo_qnx_fill_package_info(struct cpuinfo_core * package){
     // TODO
 }
 
-int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list){
+int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list, const bool have_io_priv){
 
     int ret = -1;
 
-    ret = cpuinfo_qnx_fill_core_info(qnx_core);
+    ret = cpuinfo_qnx_fill_core_info(qnx_core, have_io_priv);
     if(ret!=0){
         cpuinfo_log_fatal("cpuinfo_qnx_fill_processors_info: cpuinfo_qnx_fill_core_info failed");
         return -1;
@@ -198,6 +200,7 @@ int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list){
         l1d_index = 1;
     }
 
+    if (have_io_priv) {
 #if CPUINFO_ARCH_ARM || CPUINFO_ARCH_ARM64
         uint32_t midr=0;
         #if CPUINFO_ARCH_ARM64
@@ -237,6 +240,7 @@ int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list){
             cptr++;
         }
 #endif
+    }
 
     int i;
     for( i=0; i<num_cpu && i<MAX_PROCESSOR; i++ ) {
@@ -259,10 +263,10 @@ int cpuinfo_qnx_fill_processors_info(struct cpuinfo_processor * processor_list){
 void cpuinfo_qnx_init(void){
 
     bool cleanup = false;
+    bool have_io_priv = false;
 
-    if ( ThreadCtl(_NTO_TCTL_IO_PRIV, NULL) == -1) {
-        cpuinfo_log_fatal("Failed to get I/O access permission");
-        cleanup = true;
+    if ( ThreadCtl(_NTO_TCTL_IO_LEVEL, (void *)_NTO_IO_LEVEL_1) != -1) {
+        have_io_priv = true;
     }
 
     // allocate memory:
@@ -296,8 +300,13 @@ void cpuinfo_qnx_init(void){
         cleanup = true;
     }
 
-    int ret = cpuinfo_qnx_fill_processors_info(qnx_processors);
+    int ret = cpuinfo_qnx_fill_processors_info(qnx_processors, have_io_priv);
     if( ret != 0 ){
+        cleanup = true;
+    }
+
+    if ( ThreadCtl(_NTO_TCTL_IO_LEVEL, (void *)_NTO_IO_LEVEL_NONE) == -1) {
+        cpuinfo_log_fatal("Failed to relinquish I/O access permission");
         cleanup = true;
     }
 
