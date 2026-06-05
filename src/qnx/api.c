@@ -265,7 +265,7 @@ void cpuinfo_qnx_init(void){
     bool cleanup = false;
     bool have_io_priv = false;
 
-    if ( ThreadCtl(_NTO_TCTL_IO_LEVEL, (void *)_NTO_IO_LEVEL_1) != -1) {
+    if ( ThreadCtl(_NTO_TCTL_IO_LEVEL, (void *)_NTO_IO_LEVEL_2) != -1) {
         have_io_priv = true;
     }
 
